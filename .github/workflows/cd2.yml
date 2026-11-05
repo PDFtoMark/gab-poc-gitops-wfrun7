@@ -1,0 +1,16 @@
+name: CD2
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe payload
+        run: |
+          echo "CD2_TRIGGERED"
+          echo "head_repo=${{ github.event.workflow_run.head_repository.full_name }}"
+          echo "head_branch=${{ github.event.workflow_run.head_branch }}"
+          echo "event=${{ github.event.workflow_run.event }}"
+          echo "conclusion=${{ github.event.workflow_run.conclusion }}"
